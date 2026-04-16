@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simple Restaurant Billing</title>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --border: #dddddd;
+      --text: #222222;
+      --text-muted: #666666;
+      --primary: #0b7a75;
+      --primary-hover: #07534f;
+      --danger: #b00020;
+      --radius: 8px;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    h1, h2, h3 { margin: 0 0 var(--space-3); }
+    .app-shell { max-width: 1200px; margin: 0 auto; padding: var(--space-4); }
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-4);
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+    .app-title { font-size: 1.4rem; font-weight: 600; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1.4fr 1.2fr;
+      gap: var(--space-4);
+    }
+    @media (max-width: 960px) { .layout { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: var(--space-3);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: var(--space-2);
+      gap: var(--space-2);
+    }
+    .card-header h2 { font-size: 1.05rem; }
+    .card-header small { color: var(--text-muted); font-size: 0.8rem; }
+    .form-row { display: flex; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+    label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 2px; }
+    input[type="text"], input[type="number"], input[type="date"], select, textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      font: inherit;
+    }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); color: #ffffff; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-secondary { background: #e0e0e0; color: var(--text); }
+    .btn-danger { background: var(--danger); color: #ffffff; }
+    .section-title { font-weight: 600; margin-bottom: var(--space-2); }
+    .table-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: var(--space-2); }
+    .table-card {
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: var(--space-2);
+      cursor: pointer;
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .table-card.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(11,122,117,0.15);
+      background: #e0f2f1;
+    }
+    .table-card-header { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.9rem; font-weight: 600; }
+    .table-card-footer { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+    .muted { color: var(--text-muted); font-size: 0.85rem; }
+    .menu-list, .bill-list, .txn-list {
+      max-height: 320px;
+      overflow: auto;
+      border-top: 1px solid var(--border);
+      margin-top: var(--space-2);
+      padding-top: var(--space-2);
+    }
+    .menu-item-row, .bill-item-row, .txn-row {
+      display: grid;
+      grid-template-columns: 2.2fr 0.9fr 1.1fr;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 0.9rem;
+      padding-bottom: 6px;
+      margin-bottom: 6px;
+      border-bottom: 1px dashed #eeeeee;
+    }
+    .bill-item-row { grid-template-columns: 1.8fr 0.7fr 0.9fr 0.7fr; }
+    .text-right { text-align: right; }
+    .bill-footer {
+      margin-top: var(--space-2);
+      padding-top: var(--space-2);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+    .bill-total { font-weight: 600; font-size: 1rem; }
+    .small-input { max-width: 64px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #e0f2f1;
+      color: #00695c;
+    }
+    .badge.out { background: #ffebee; color: #b71c1c; }
+    .analytics-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.9rem; }
+    .analytics-total { margin-top: var(--space-2); padding-top: var(--space-2); border-top: 1px solid var(--border); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-title">Restaurant Table Billing</div>
+      <div class="muted">Lightweight browser-only tool for table orders &amp; daily exports</div>
+    </header>
+    <div class="layout">
+      <section class="card">
+        <div class="card-header">
+          <h2>Tables</h2>
+          <small id="currentDateLabel"></small>
+        </div>
+        <div class="form-row">
+          <div style="flex: 1;">
+            <label for="tableCount">Number of tables</label>
+            <input type="number" id="tableCount" min="1" max="40" value="10">
+          </div>
+          <div>
+            <label>&nbsp;</label>
+            <button class="btn-secondary" id="applyTableCountBtn">Apply</button>
+          </div>
+        </div>
+        <div class="table-grid" id="tablesContainer"></div>
+        <p class="muted" style="margin-top: var(--space-2);">Tip: Tap a table to start adding items to its bill.</p>
+      </section>
+      <section class="card">
+        <div class="card-header">
+          <h2>Menu &amp; Current Bill</h2>
+          <small id="currentTableLabel">No table selected</small>
+        </div>
+        <div class="section-title">Add / Update Menu Item</div>
+        <div class="form-row">
+          <div style="flex: 1.4;">
+            <label for="menuName">Item name</label>
+            <input type="text" id="menuName" placeholder="e.g., Masala Dosa">
+          </div>
+          <div style="flex: 0.8;">
+            <label for="menuPrice">Price</label>
+            <input type="number" id="menuPrice" placeholder="120" min="0">
+          </div>
+          <div>
+            <label>&nbsp;</label>
+            <button class="btn-primary" id="addMenuBtn">Save item</button>
+          </div>
+        </div>
+        <p class="muted">Once saved, items appear below for quick punching.</p>
+        <div class="section-title" style="margin-top: var(--space-3);">Menu</div>
+        <div class="menu-list" id="menuList"></div>
+        <div class="section-title" style="margin-top: var(--space-3);">Current Bill</div>
+        <div class="bill-list" id="billList">
+          <p class="muted">Select a table and add items from the menu to start a bill.</p>
+        </div>
+        <div class="bill-footer">
+          <div class="bill-total" id="billTotalLabel">Total: &#8377;0</div>
+          <div style="display:flex; gap: var(--space-2); flex-wrap: wrap; align-items:center;">
+            <div>
+              <label for="paymentMode" style="font-size: 0.8rem;">Payment mode</label>
+              <select id="paymentMode">
+                <option value="">Select</option>
+                <option value="Cash">Cash</option>
+                <option value="UPI">UPI</option>
+                <option value="Card">Card</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <button class="btn-primary" id="closeBillBtn" disabled>Close &amp; Save Bill</button>
+          </div>
+        </div>
+      </section>
+      <section class="card">
+        <div class="card-header">
+          <h2>Today's Transactions &amp; Analytics</h2>
+          <small>Filter by date, see totals, export CSV</small>
+        </div>
+        <div class="form-row">
+          <div style="flex:1;">
+            <label for="filterDate">Date</label>
+            <input type="date" id="filterDate">
+          </div>
+          <div>
+            <label>&nbsp;</label>
+            <button class="btn-secondary" id="todayBtn">Today</button>
+          </div>
+        </div>
+        <div class="txn-list" id="txnList">
+          <p class="muted">Closed bills will appear here with payment mode and totals.</p>
+        </div>
+        <div class="section-title" style="margin-top: var(--space-3);">Payment Mode Summary</div>
+        <div id="analyticsContainer"><p class="muted">No data yet.</p></div>
+        <div class="analytics-total" id="analyticsTotalLabel">Total for selected date: &#8377;0</div>
+        <div class="form-row" style="margin-top:12px;">
+          <button class="btn-primary" id="exportCsvBtn" disabled>Export as CSV (Excel)</button>
+          <span class="muted" id="exportHint">Select a date with transactions to export.</span>
+        </div>
+      </section>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
