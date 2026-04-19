@@ -971,8 +971,7 @@ class RestaurantApp {
     const csv = [
       headers.join(","),
       ...rows.map(row => headers.map(h => `"${String(row[h] ?? "").replace(/"/g, '""')}"`).join(","))
-    ].join("
-");
+    ].join("\n");
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
