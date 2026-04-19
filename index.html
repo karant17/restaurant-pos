@@ -1,256 +1,737 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Simple Restaurant Billing</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Restaurant Management System</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root {
+      --primary: #0b7a75;
+      --primary-dark: #07534f;
+      --danger: #b00020;
+      --success: #2e7d32;
+      --warning: #f57c00;
       --bg: #f5f5f5;
       --surface: #ffffff;
-      --border: #dddddd;
+      --border: #e0e0e0;
       --text: #222222;
-      --text-muted: #666666;
-      --primary: #0b7a75;
-      --primary-hover: #07534f;
-      --danger: #b00020;
-      --radius: 8px;
-      --space-1: 4px;
-      --space-2: 8px;
-      --space-3: 12px;
-      --space-4: 16px;
-      --space-6: 24px;
-      --shadow: 0 2px 6px rgba(0,0,0,0.06);
+      --muted: #666666;
+      --radius: 12px;
+      --shadow: 0 4px 14px rgba(0,0,0,0.08);
     }
+
     * { box-sizing: border-box; }
-    body {
+
+    html, body {
       margin: 0;
+      padding: 0;
+      height: 100%;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.5;
     }
-    h1, h2, h3 { margin: 0 0 var(--space-3); }
-    .app-shell { max-width: 1200px; margin: 0 auto; padding: var(--space-4); }
-    .app-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-4);
-      gap: var(--space-2);
-      flex-wrap: wrap;
-    }
-    .app-title { font-size: 1.4rem; font-weight: 600; }
-    .layout {
-      display: grid;
-      grid-template-columns: 1.1fr 1.4fr 1.2fr;
-      gap: var(--space-4);
-    }
-    @media (max-width: 960px) { .layout { grid-template-columns: 1fr; } }
-    .card {
-      background: var(--surface);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      padding: var(--space-3);
-    }
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: var(--space-2);
-      gap: var(--space-2);
-    }
-    .card-header h2 { font-size: 1.05rem; }
-    .card-header small { color: var(--text-muted); font-size: 0.8rem; }
-    .form-row { display: flex; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
-    label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 2px; }
-    input[type="text"], input[type="number"], input[type="date"], select, textarea {
-      width: 100%;
-      padding: 6px 8px;
-      border-radius: 4px;
-      border: 1px solid var(--border);
-      font: inherit;
-    }
-    button {
+
+    .hidden { display: none !important; }
+
+    .btn {
       border: none;
       border-radius: 999px;
-      padding: 6px 12px;
-      font: inherit;
+      padding: 10px 16px;
       cursor: pointer;
-      display: inline-flex;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: #e9ecef; color: var(--text); }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-warning { background: var(--warning); color: white; }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: white;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .login-page {
+      min-height: 100vh;
+      display: flex;
       align-items: center;
       justify-content: center;
-      gap: 4px;
-      white-space: nowrap;
+      background: linear-gradient(135deg, var(--primary) 0%, #083a37 100%);
+      padding: 20px;
     }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-primary { background: var(--primary); color: #ffffff; }
-    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
-    .btn-secondary { background: #e0e0e0; color: var(--text); }
-    .btn-danger { background: var(--danger); color: #ffffff; }
-    .section-title { font-weight: 600; margin-bottom: var(--space-2); }
-    .table-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: var(--space-2); }
-    .table-card {
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      padding: var(--space-2);
+
+    .login-box {
+      background: white;
+      width: 100%;
+      max-width: 400px;
+      padding: 32px;
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.22);
+      text-align: center;
+    }
+
+    .login-box h1 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .login-box p {
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .app-shell {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: var(--primary);
+      color: white;
+      padding: 20px;
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 16px;
+    }
+
+    .nav-link {
+      display: block;
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: rgba(255,255,255,0.9);
+      text-decoration: none;
+      margin-bottom: 8px;
       cursor: pointer;
-      background: #fafafa;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      background: rgba(255,255,255,0.18);
+      color: white;
+    }
+
+    .main {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 4px;
     }
-    .table-card.active {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(11,122,117,0.15);
-      background: #e0f2f1;
-    }
-    .table-card-header { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.9rem; font-weight: 600; }
-    .table-card-footer { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
-    .muted { color: var(--text-muted); font-size: 0.85rem; }
-    .menu-list, .bill-list, .txn-list {
-      max-height: 320px;
-      overflow: auto;
-      border-top: 1px solid var(--border);
-      margin-top: var(--space-2);
-      padding-top: var(--space-2);
-    }
-    .menu-item-row, .bill-item-row, .txn-row {
-      display: grid;
-      grid-template-columns: 2.2fr 0.9fr 1.1fr;
-      align-items: center;
-      gap: var(--space-2);
-      font-size: 0.9rem;
-      padding-bottom: 6px;
-      margin-bottom: 6px;
-      border-bottom: 1px dashed #eeeeee;
-    }
-    .bill-item-row { grid-template-columns: 1.8fr 0.7fr 0.9fr 0.7fr; }
-    .text-right { text-align: right; }
-    .bill-footer {
-      margin-top: var(--space-2);
-      padding-top: var(--space-2);
-      border-top: 1px solid var(--border);
+
+    .topbar {
+      background: white;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: var(--space-2);
+      box-shadow: var(--shadow);
+    }
+
+    .content {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+
+    .stat-box {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .form-row {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .table-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px,1fr));
+      gap: 12px;
+    }
+
+    .table-card {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .table-card.active {
+      border-color: var(--primary);
+      background: rgba(11,122,117,0.06);
+    }
+
+    .table-card h4 {
+      margin: 0 0 6px 0;
+    }
+
+    .muted { color: var(--muted); }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge-success { background: #d4edda; color: #155724; }
+    .badge-warning { background: #fff3cd; color: #856404; }
+    .badge-info { background: #d1ecf1; color: #0c5460; }
+
+    .menu-category {
+      margin-bottom: 16px;
+    }
+
+    .category-header {
+      background: #f2f4f5;
+      padding: 12px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+    }
+
+    .category-items {
+      margin-top: 10px;
+      padding-left: 8px;
+    }
+
+    .menu-item {
+      display: grid;
+      grid-template-columns: 1fr 80px 90px;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: white;
+    }
+
+    .bill-item {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .summary-row.total {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 2px solid var(--primary);
+    }
+
+    .inline {
+      display: flex;
+      gap: 10px;
+      align-items: center;
       flex-wrap: wrap;
     }
-    .bill-total { font-weight: 600; font-size: 1rem; }
-    .small-input { max-width: 64px; }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      background: #e0f2f1;
-      color: #00695c;
+
+    .qr-image,
+    .logo-image,
+    .preview-image {
+      max-width: 180px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin-top: 10px;
     }
-    .badge.out { background: #ffebee; color: #b71c1c; }
-    .analytics-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.9rem; }
-    .analytics-total { margin-top: var(--space-2); padding-top: var(--space-2); border-top: 1px solid var(--border); font-weight: 600; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f8f9fa;
+      font-weight: 700;
+    }
+
+    .alert {
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      display: none;
+      font-weight: 600;
+    }
+
+    .alert.show { display: block; }
+    .alert.success { background: #d4edda; color: #155724; }
+    .alert.error { background: #f8d7da; color: #721c24; }
+    .alert.warning { background: #fff3cd; color: #856404; }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 20px;
+    }
+
+    .modal.active { display: flex; }
+
+    .modal-box {
+      width: 100%;
+      max-width: 600px;
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 900px) {
+      .app-shell { flex-direction: column; }
+      .sidebar { width: 100%; }
+      .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+      .menu-item, .bill-item { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-  <div class="app-shell">
-    <header class="app-header">
-      <div class="app-title">Restaurant Table Billing</div>
-      <div class="muted">Lightweight browser-only tool for table orders &amp; daily exports</div>
-    </header>
-    <div class="layout">
-      <section class="card">
-        <div class="card-header">
-          <h2>Tables</h2>
-          <small id="currentDateLabel"></small>
-        </div>
-        <div class="form-row">
-          <div style="flex: 1;">
-            <label for="tableCount">Number of tables</label>
-            <input type="number" id="tableCount" min="1" max="40" value="10">
-          </div>
-          <div>
-            <label>&nbsp;</label>
-            <button class="btn-secondary" id="applyTableCountBtn">Apply</button>
-          </div>
-        </div>
-        <div class="table-grid" id="tablesContainer"></div>
-        <p class="muted" style="margin-top: var(--space-2);">Tip: Tap a table to start adding items to its bill.</p>
-      </section>
-      <section class="card">
-        <div class="card-header">
-          <h2>Menu &amp; Current Bill</h2>
-          <small id="currentTableLabel">No table selected</small>
-        </div>
-        <div class="section-title">Add / Update Menu Item</div>
-        <div class="form-row">
-          <div style="flex: 1.4;">
-            <label for="menuName">Item name</label>
-            <input type="text" id="menuName" placeholder="e.g., Masala Dosa">
-          </div>
-          <div style="flex: 0.8;">
-            <label for="menuPrice">Price</label>
-            <input type="number" id="menuPrice" placeholder="120" min="0">
-          </div>
-          <div>
-            <label>&nbsp;</label>
-            <button class="btn-primary" id="addMenuBtn">Save item</button>
-          </div>
-        </div>
-        <p class="muted">Once saved, items appear below for quick punching.</p>
-        <div class="section-title" style="margin-top: var(--space-3);">Menu</div>
-        <div class="menu-list" id="menuList"></div>
-        <div class="section-title" style="margin-top: var(--space-3);">Current Bill</div>
-        <div class="bill-list" id="billList">
-          <p class="muted">Select a table and add items from the menu to start a bill.</p>
-        </div>
-        <div class="bill-footer">
-          <div class="bill-total" id="billTotalLabel">Total: &#8377;0</div>
-          <div style="display:flex; gap: var(--space-2); flex-wrap: wrap; align-items:center;">
-            <div>
-              <label for="paymentMode" style="font-size: 0.8rem;">Payment mode</label>
-              <select id="paymentMode">
-                <option value="">Select</option>
-                <option value="Cash">Cash</option>
-                <option value="UPI">UPI</option>
-                <option value="Card">Card</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <button class="btn-primary" id="closeBillBtn" disabled>Close &amp; Save Bill</button>
-          </div>
-        </div>
-      </section>
-      <section class="card">
-        <div class="card-header">
-          <h2>Today's Transactions &amp; Analytics</h2>
-          <small>Filter by date, see totals, export CSV</small>
-        </div>
-        <div class="form-row">
-          <div style="flex:1;">
-            <label for="filterDate">Date</label>
-            <input type="date" id="filterDate">
-          </div>
-          <div>
-            <label>&nbsp;</label>
-            <button class="btn-secondary" id="todayBtn">Today</button>
-          </div>
-        </div>
-        <div class="txn-list" id="txnList">
-          <p class="muted">Closed bills will appear here with payment mode and totals.</p>
-        </div>
-        <div class="section-title" style="margin-top: var(--space-3);">Payment Mode Summary</div>
-        <div id="analyticsContainer"><p class="muted">No data yet.</p></div>
-        <div class="analytics-total" id="analyticsTotalLabel">Total for selected date: &#8377;0</div>
-        <div class="form-row" style="margin-top:12px;">
-          <button class="btn-primary" id="exportCsvBtn" disabled>Export as CSV (Excel)</button>
-          <span class="muted" id="exportHint">Select a date with transactions to export.</span>
-        </div>
-      </section>
+
+  <div id="loginPage" class="login-page">
+    <div class="login-box">
+      <div style="font-size:48px;">🍽️</div>
+      <h1>Restaurant Management</h1>
+      <p>Secure admin login</p>
+      <div style="text-align:left; margin-bottom:16px;">
+        <label for="loginPassword">Admin Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter password" />
+      </div>
+      <button class="btn btn-primary" id="loginBtn" style="width:100%;">Login</button>
+      <div id="loginError" class="alert error" style="margin-top:14px;"></div>
+      <p style="margin-top:12px; font-size:12px; color:#888;">Default password: admin123</p>
     </div>
   </div>
+
+  <div id="mainApp" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="brand">🍽️ <span id="sidebarRestaurantName">Restaurant</span></div>
+      <a class="nav-link active" data-page="dashboard">Dashboard</a>
+      <a class="nav-link" data-page="tables">Tables & Orders</a>
+      <a class="nav-link" data-page="delivery">Delivery Orders</a>
+      <a class="nav-link" data-page="admin">Admin Panel</a>
+      <a class="nav-link" data-page="data">Data & Export</a>
+      <hr style="border:none; border-top:1px solid rgba(255,255,255,.2); margin:20px 0;">
+      <a class="nav-link" id="logoutBtn">Logout</a>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div style="font-size:24px; font-weight:800;" id="pageTitle">Dashboard</div>
+          <div class="muted" id="topDate"></div>
+        </div>
+        <div class="inline">
+          <img id="headerLogo" class="logo-image hidden" alt="Restaurant Logo" style="max-width:60px;">
+          <strong id="restaurantNameDisplay">My Restaurant</strong>
+        </div>
+      </div>
+
+      <div class="content">
+        <div id="globalAlert" class="alert"></div>
+
+        <!-- DASHBOARD -->
+        <section id="dashboardPage" class="page active">
+          <div class="grid-4">
+            <div class="stat-box">
+              <div class="stat-label">Today's Revenue</div>
+              <div class="stat-value" id="todayRevenue">₹0.00</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Transactions Today</div>
+              <div class="stat-value" id="totalTransactions">0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Active Tables</div>
+              <div class="stat-value" id="activeTables">0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Delivery Orders</div>
+              <div class="stat-value" id="deliveryOrdersCount">0</div>
+            </div>
+          </div>
+
+          <div class="grid-2" style="margin-top:20px;">
+            <div class="card">
+              <h3 class="card-title">Payment Mode Distribution</h3>
+              <div id="paymentChart"></div>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Recent Transactions</h3>
+              <div id="recentTxns"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TABLES -->
+        <section id="tablesPage" class="page">
+          <div class="card">
+            <h3 class="card-title">Tables</h3>
+            <div id="tablesGrid" class="table-grid"></div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Menu</h3>
+            <div class="form-row">
+              <div>
+                <label for="menuSearch">Search Menu</label>
+                <input id="menuSearch" type="text" placeholder="Search item name">
+              </div>
+            </div>
+            <div id="menuContainer"></div>
+          </div>
+
+          <div id="billSection" class="card hidden">
+            <h3 class="card-title">Current Bill - <span id="currentTableDisplay">Table</span></h3>
+            <div id="billItems"></div>
+
+            <div style="margin-top:16px;">
+              <div class="summary-row"><span>Subtotal</span><strong id="subtotal">₹0.00</strong></div>
+              <div class="summary-row"><span>SGST (5%)</span><strong id="sgst">₹0.00</strong></div>
+              <div class="summary-row"><span>CGST (5%)</span><strong id="cgst">₹0.00</strong></div>
+              <div class="summary-row total"><span>Total</span><span id="billTotal">₹0.00</span></div>
+            </div>
+
+            <div class="form-row" style="margin-top:20px;">
+              <div>
+                <label style="display:flex; align-items:center; gap:8px;">
+                  <input type="checkbox" id="tipCheckbox" style="width:auto;">
+                  Add Tip
+                </label>
+                <div id="tipInputGroup" class="hidden" style="margin-top:10px;">
+                  <label for="tipAmount">Tip Amount</label>
+                  <input id="tipAmount" type="number" min="0" placeholder="Enter tip">
+                </div>
+              </div>
+              <div>
+                <label for="paymentMode">Payment Mode</label>
+                <select id="paymentMode"></select>
+              </div>
+            </div>
+
+            <div id="paymentQrPreview"></div>
+
+            <div class="inline" style="margin-top:16px;">
+              <button class="btn btn-success" id="closeOrderBtn">Complete & Close Table</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- DELIVERY -->
+        <section id="deliveryPage" class="page">
+          <div class="card">
+            <div class="inline" style="justify-content:space-between;">
+              <h3 class="card-title" style="margin:0;">Delivery Orders</h3>
+              <button class="btn btn-primary" id="addDeliveryBtn">Add Delivery Order</button>
+            </div>
+            <div id="deliveryOrdersList"></div>
+          </div>
+        </section>
+
+        <!-- ADMIN -->
+        <section id="adminPage" class="page">
+          <div class="card">
+            <h3 class="card-title">Restaurant Settings</h3>
+            <div class="form-row">
+              <div>
+                <label for="restName">Restaurant Name</label>
+                <input id="restName" type="text">
+              </div>
+              <div>
+                <label for="tableCount">Number of Tables</label>
+                <input id="tableCount" type="number" min="1" max="50">
+              </div>
+              <div>
+                <label for="adminPassword">Change Admin Password</label>
+                <input id="adminPassword" type="password" placeholder="New password">
+              </div>
+            </div>
+            <button class="btn btn-primary" id="updateTablesBtn">Update Table Count</button>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3 class="card-title">Restaurant Logo</h3>
+              <label for="logoUpload">Upload Logo</label>
+              <input id="logoUpload" type="file" accept="image/*">
+              <img id="logoPreview" class="preview-image hidden" alt="Logo preview">
+            </div>
+
+            <div class="card">
+              <h3 class="card-title">Payment QR Codes</h3>
+              <div class="form-row">
+                <div>
+                  <label for="qrPaymentMethod">Payment Method</label>
+                  <select id="qrPaymentMethod"></select>
+                </div>
+              </div>
+              <label for="qrUpload">Upload QR Image</label>
+              <input id="qrUpload" type="file" accept="image/*">
+              <img id="qrPreview" class="preview-image hidden" alt="QR preview">
+              <div class="inline" style="margin-top:12px;">
+                <button class="btn btn-primary" id="uploadQrBtn">Save QR Code</button>
+              </div>
+              <div id="qrCodesList" style="margin-top:16px;"></div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3 class="card-title">Categories</h3>
+              <div class="inline" style="margin-bottom:12px;">
+                <input id="newCategory" type="text" placeholder="New category">
+                <button class="btn btn-primary" id="addCategoryBtn">Add</button>
+              </div>
+              <div id="categoriesList"></div>
+            </div>
+
+            <div class="card">
+              <h3 class="card-title">Payment Methods</h3>
+              <div class="inline" style="margin-bottom:12px;">
+                <input id="newPaymentMethod" type="text" placeholder="New payment method">
+                <button class="btn btn-primary" id="addPaymentMethodBtn">Add</button>
+              </div>
+              <div id="paymentMethodsList"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Add Menu Item</h3>
+            <div class="form-row">
+              <div>
+                <label for="itemName">Item Name</label>
+                <input id="itemName" type="text">
+              </div>
+              <div>
+                <label for="itemCategory">Category</label>
+                <select id="itemCategory"></select>
+              </div>
+              <div>
+                <label for="itemPrice">Price</label>
+                <input id="itemPrice" type="number" min="0">
+              </div>
+            </div>
+            <button class="btn btn-primary" id="addMenuItemBtn">Add Menu Item</button>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Manage Menu Items</h3>
+            <div id="menuItemsList"></div>
+          </div>
+        </section>
+
+        <!-- DATA -->
+        <section id="dataPage" class="page">
+          <div class="grid-2">
+            <div class="card">
+              <h3 class="card-title">Export Transactions</h3>
+              <div class="form-row">
+                <div>
+                  <label for="exportStartDate">Start Date</label>
+                  <input type="date" id="exportStartDate">
+                </div>
+                <div>
+                  <label for="exportEndDate">End Date</label>
+                  <input type="date" id="exportEndDate">
+                </div>
+              </div>
+              <div class="inline">
+                <button class="btn btn-primary" id="exportTransactionsBtn">Export Excel</button>
+                <button class="btn btn-secondary" id="exportTransactionsCsvBtn">Export CSV</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 class="card-title">Export Delivery Orders</h3>
+              <div class="form-row">
+                <div>
+                  <label for="exportDeliveryStartDate">Start Date</label>
+                  <input type="date" id="exportDeliveryStartDate">
+                </div>
+                <div>
+                  <label for="exportDeliveryEndDate">End Date</label>
+                  <input type="date" id="exportDeliveryEndDate">
+                </div>
+              </div>
+              <div class="inline">
+                <button class="btn btn-primary" id="exportDeliveryBtn">Export Excel</button>
+                <button class="btn btn-secondary" id="exportDeliveryCsvBtn">Export CSV</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Export Menu / Backup / Restore</h3>
+            <div class="inline">
+              <button class="btn btn-primary" id="exportMenuBtn">Export Menu Excel</button>
+              <button class="btn btn-warning" id="backupDataBtn">Backup JSON</button>
+              <button class="btn btn-secondary" id="restoreDataBtn">Restore JSON</button>
+              <button class="btn btn-danger" id="clearAllDataBtn">Clear All Data</button>
+              <input id="restoreFile" type="file" accept=".json,application/json" class="hidden">
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELIVERY MODAL -->
+  <div id="deliveryModal" class="modal">
+    <div class="modal-box">
+      <h3 style="margin-top:0;">Add Delivery Order</h3>
+      <div class="form-row">
+        <div>
+          <label for="deliveryPlatform">Platform</label>
+          <select id="deliveryPlatform">
+            <option>Swiggy</option>
+            <option>Zomato</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="deliveryOrderId">Order ID</label>
+          <input id="deliveryOrderId" type="text">
+        </div>
+        <div>
+          <label for="deliveryCustomerName">Customer Name</label>
+          <input id="deliveryCustomerName" type="text">
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label for="deliveryItems">Items</label>
+          <textarea id="deliveryItems" rows="3"></textarea>
+        </div>
+        <div>
+          <label for="deliveryAmount">Amount</label>
+          <input id="deliveryAmount" type="number" min="0">
+        </div>
+        <div>
+          <label for="deliveryStatus">Status</label>
+          <select id="deliveryStatus">
+            <option>Pending</option>
+            <option>Preparing</option>
+            <option>Ready</option>
+            <option>Completed</option>
+          </select>
+        </div>
+      </div>
+      <div class="inline" style="justify-content:flex-end; margin-top:16px;">
+        <button class="btn btn-secondary" id="cancelDeliveryBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveDeliveryBtn">Save Order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR MODAL -->
+  <div id="paymentQrModal" class="modal">
+    <div class="modal-box" style="text-align:center; max-width:420px;">
+      <h3 id="paymentMethodName">Payment QR</h3>
+      <div id="paymentQrContent"></div>
+      <div class="inline" style="justify-content:center; margin-top:16px;">
+        <button class="btn btn-secondary" id="closeQrBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
